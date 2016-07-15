@@ -1,10 +1,8 @@
 #gerry-common-framework-vertx
 
- Vert.x 3.2.1 Web Application 
+ Vert.x 3.2.1 Web 类似于spring framework web，不依赖任何spring模块，注解式开发的Application
  
  Vertx 3.2.1 RPC远程调用
- 
- 类似于spring framework web的注解式application，不依赖任何spring模块，注解式开发
  
  
  模块功能：
