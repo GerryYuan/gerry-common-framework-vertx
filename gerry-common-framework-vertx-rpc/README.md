@@ -1,7 +1,7 @@
 #gerry-common-framework-vertx-rpc
-Vert.x 3.2.1 EventBus
+`Vert.x` 3.2.1 `EventBus` `Vertx-RPC`
 
- EventBus RPC （OK）
+基于`EventBus`的`RPC` 
 
 开发EventBus RPC步骤：
      	
