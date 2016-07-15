@@ -1,7 +1,8 @@
 #gerry-common-framework-vertx
 
-## `Vert.x-Web` 3.2.1 类似于`spring` `framework` `web`，不依赖任何spring模块，`注解式`开发的Application
-## `Vertx-RPC` 3.2.1 `远程调用`
+ `Vert.x-Web` 3.2.1 类似于`spring` `framework` `web`，不依赖任何spring模块，`注解式`开发的Application
+
+ `Vertx-RPC` 3.2.1 `远程调用`
  
 模块功能：
  
