@@ -2,6 +2,16 @@
 Vert.x 3.2.1 Web Application 
  一个类似于spring framework web的注解式application，0基础实战vertx-web，注解式开发，0成本spring过度vertx
  
+ 模块功能：
+ 	gerry-common-framework-vertx，vertx核心封装功能，所有模块需依赖该模块
+ 	gerry-common-framework-vertx-data，主要做和数据库相关的接口封装，目前还在开发中....
+ 	gerry-common-framework-vertx-rpc，通过eventbus进行rpc调用，目前大体功能实现差不多，还有些功能在完善中.....
+ 	gerry-common-service，模拟一个类似的service接口，进行rpc调用，前期放在这个模块里面，后面会移植出去.....
+ 	gerry-application-web，一个类似于spring web的注解式rest api封装，具体看下面说明
+ 	
+ 后面主要的工作：
+ 	进行vertx 集群封装，以及数据库DAO层封装，以及redis封装，目前所有对接数据仓库的模块都放在vertx-data中（redis，jdbc）
+ 
  CRUD
  
  Validation, right now there's no input validation
