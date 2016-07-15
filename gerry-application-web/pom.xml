@@ -17,10 +17,9 @@
 
   <dependencies>
   	<dependency>
-  		<groupId>gerry-common-framework-vertx</groupId>
-  		<artifactId>gerry-common-framework-vertx</artifactId>
+  		<groupId>gerry-common-framework-vertx-data</groupId>
+  		<artifactId>gerry-common-framework-vertx-data</artifactId>
   		<version>${framework.version}</version>
-      	<scope>test</scope>
   	</dependency>
     <dependency>
       <groupId>junit</groupId>

@@ -1,4 +1,6 @@
 {
   "port" : 8080,
-  "scan.route.url":"com.gerry.common.app.web.handler.*"
+  "scan.route.url":"com.gerry.common.app.web.handler.*",
+  "scan.aop.url":"com.gerry.common.framework.vertx.data.service",
+  "upload.files.url":"files"
 }
