@@ -4,6 +4,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.net.URL;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 
 import lombok.extern.log4j.Log4j;
@@ -15,7 +16,7 @@ import com.google.common.collect.Maps;
 @Log4j
 public class VertxConfiguration {
 
-	private static final String[] CONFIG_NAMES = { "config.json", "jdbc.json" };
+	private static final String[] CONFIG_NAMES = { "config.json", "jdbc.json", "redis.json" };
 
 	static final VertxConfiguration configuration = new VertxConfiguration();
 
@@ -50,6 +51,20 @@ public class VertxConfiguration {
 		return configMaps.get("jdbc.json").getString(configStr);
 	}
 
+	public static boolean existsJsonFile(String json) {
+		return VertxEmptyUtils.isEmpty(configMaps.get(json)) ? false : true;
+	}
+
+	public static String redisStr(String configStr) {
+		Objects.requireNonNull(configMaps.get("redis.json"), "not exists file redis.json");
+		return configMaps.get("redis.json").getString(configStr);
+	}
+
+	public static int redisInt(String configStr) {
+		Objects.requireNonNull(configMaps.get("redis.json"), "not exists file redis.json");
+		return configMaps.get("redis.json").getInteger(configStr);
+	}
+	
 	public static JsonObject jdbcJsonObject() {
 		JsonObject config = new JsonObject().put("url", jdbcStr("jdbc.url")).put("driver_class", jdbcStr("jdbc.driver_class"));
 		String username = jdbcStr("jdbc.username");
