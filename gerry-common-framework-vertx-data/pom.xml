@@ -29,6 +29,12 @@
 	    <version>${vertx.version}</version>
 	</dependency>
 	
+	<dependency>
+	  <groupId>io.vertx</groupId>
+	  <artifactId>vertx-redis-client</artifactId>
+	  <version>${vertx.version}</version>
+	</dependency>
+
 	<!-- <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-sync</artifactId>
@@ -47,12 +53,6 @@
 	    <version>3.2.4</version>
 	</dependency>
 	
-	<dependency>
-	    <groupId>org.springframework.data</groupId>
-	    <artifactId>spring-data-jpa</artifactId>
-	    <version>1.9.4.RELEASE</version>
-	</dependency>
-<!--  -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

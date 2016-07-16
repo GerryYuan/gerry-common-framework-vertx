@@ -10,6 +10,7 @@ public class StartVertxServiceServer {
 
 	public static void main(String[] args) throws FileNotFoundException {
 		PropertyConfigurator.configure(new FileInputStream(new File("src/main/resources/log4j.properties")));
-		
+		/*RedisOptions options = new RedisOptions(json);
+		RedisClient.create(VertxCoreUtils.vertx, options);*/
 	}
 }
