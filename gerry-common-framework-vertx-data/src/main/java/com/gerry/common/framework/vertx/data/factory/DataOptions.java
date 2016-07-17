@@ -12,7 +12,7 @@ import io.vertx.core.ServiceHelper;
  */
 public interface DataOptions {
 	
-	static  DataFactory<?> newData() {
+	static  DataFactory<?> newClient() {
 		return (DataFactory<?>) factory.newFactory();
 	}
 

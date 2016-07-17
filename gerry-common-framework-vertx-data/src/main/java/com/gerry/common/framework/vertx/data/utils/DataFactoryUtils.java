@@ -7,6 +7,6 @@ import com.gerry.common.framework.vertx.utils.VertxCoreUtils;
 
 public interface DataFactoryUtils {
 
-	static RedisClient REDISCLIENT = (RedisClient) DataOptions.newData().createClient(VertxCoreUtils.vertx);
+	static RedisClient REDISCLIENT = (RedisClient) DataOptions.newClient().createClient(VertxCoreUtils.vertx);
 
 }
