@@ -1,10 +1,8 @@
 package com.gerry.service.example;
 
-import org.jfaster.mango.operator.Mango;
-
 import com.gerry.common.framework.vertx.data.orm.MangoManager;
+import com.gerry.dao.fruit.FruitDao;
 import com.gerry.service.dao.entity.Fruit;
-import com.gerry.service.dao.fruit.FruitDao;
 
 
 public class TestRPC {
@@ -19,10 +17,9 @@ public class TestRPC {
 //		});
 //		userService.add();
 		
-		Mango mango = MangoManager.getInstance();
-		FruitDao fruitDao = mango.create(FruitDao.class);
+		FruitDao fruitDao =  MangoManager.create(FruitDao.class);
 		Fruit fruit = new Fruit();
-		fruit.setName("name1");
+		fruit.setName("不错哦1111");
 		fruit.setNum(1);
 		fruitDao.addFruit(fruit);
 	}

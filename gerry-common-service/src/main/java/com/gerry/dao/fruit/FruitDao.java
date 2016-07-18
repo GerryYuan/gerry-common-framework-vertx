@@ -1,4 +1,4 @@
-package com.gerry.service.dao.fruit;
+package com.gerry.dao.fruit;
 
 import org.jfaster.mango.annotation.DB;
 import org.jfaster.mango.annotation.ReturnGeneratedId;
