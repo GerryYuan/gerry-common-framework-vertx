@@ -64,7 +64,7 @@ public class VertxConfiguration {
 		Objects.requireNonNull(configMaps.get("redis.json"), "not exists file redis.json");
 		return configMaps.get("redis.json").getInteger(configStr);
 	}
-	
+
 	public static JsonObject jdbcJsonObject() {
 		JsonObject config = new JsonObject().put("url", jdbcStr("jdbc.url")).put("driver_class", jdbcStr("jdbc.driver_class"));
 		String username = jdbcStr("jdbc.username");
@@ -72,8 +72,7 @@ public class VertxConfiguration {
 			config.put("user", username);
 
 		String password = jdbcStr("jdbc.password");
-		if (VertxEmptyUtils.isNotEmpty(password))
-			config.put("password", password);
+		config.put("password", VertxEmptyUtils.isNotEmpty(password) ? password : "");
 
 		return config;
 	}

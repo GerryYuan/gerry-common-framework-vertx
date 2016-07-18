@@ -17,8 +17,8 @@
 
   <dependencies>
   	<dependency>
-  		<groupId>gerry-common-framework-vertx-rpc</groupId>
-  		<artifactId>gerry-common-framework-vertx-rpc</artifactId>
+  		<groupId>gerry-common-framework-vertx-data</groupId>
+  		<artifactId>gerry-common-framework-vertx-data</artifactId>
   		<version>${framework.version}</version>
   	</dependency>
   	
