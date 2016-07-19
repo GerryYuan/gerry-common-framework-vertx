@@ -58,7 +58,9 @@ public class EventBusHandlersFactory {
 		eventbus.<FastJsonMessage> consumer(address, res -> {
 			String method = EventBusHeaderFactory.defaultHeader(res);
 			if (!EventBusHeaderFactory.storage(address).containsKey(method)) {
-				res.fail(1, String.format("Method %s not found", method));
+				String error = String.format("Method %s not found", method);
+				log.error(error);
+				res.fail(1, error);
 				return;
 			}
 
@@ -78,6 +80,7 @@ public class EventBusHandlersFactory {
 				}*/
 				res.reply(MessageConverterHelper.converter(new Object[] { result }));
 			} catch (Exception e) {
+				log.error("", e);
 				res.fail(1, e.getMessage());
 			}
 		});

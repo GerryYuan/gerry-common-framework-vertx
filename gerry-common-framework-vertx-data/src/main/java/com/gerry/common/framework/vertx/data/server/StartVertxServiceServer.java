@@ -1,4 +1,4 @@
-package com.gerry.common.framework.vertx.server;
+package com.gerry.common.framework.vertx.data.server;
 
 import io.vertx.core.Vertx;
 
@@ -10,8 +10,8 @@ import lombok.extern.log4j.Log4j;
 
 import org.apache.log4j.PropertyConfigurator;
 
+import com.gerry.common.framework.vertx.data.verticle.StandardServiceVerticle;
 import com.gerry.common.framework.vertx.utils.VertxCoreUtils;
-import com.gerry.common.framework.vertx.verticle.StandardServiceVerticle;
 import com.gerry.common.framework.vertx.verticle.StandardVerticle;
 
 @Log4j

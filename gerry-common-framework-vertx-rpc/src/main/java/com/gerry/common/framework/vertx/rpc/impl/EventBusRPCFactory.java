@@ -60,7 +60,7 @@ public class EventBusRPCFactory implements RPCFactory {
 			log.info(String.format("eventbus client send address -> %s", address));
 			eventBus.<FastJsonMessage> send(address, msg, options, res -> {
 				if (res.failed()) {
-					log.error(res.cause());
+					log.error("", res.cause());
 					return;
 				}
 				log.info(res.result().body().getArgs()[0]);

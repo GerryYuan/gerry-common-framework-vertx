@@ -10,6 +10,7 @@ import javax.sql.DataSource;
 import lombok.extern.log4j.Log4j;
 
 import org.jfaster.mango.annotation.DB;
+import org.jfaster.mango.datasource.DataSourceUtils;
 import org.jfaster.mango.datasource.DriverManagerDataSource;
 import org.jfaster.mango.operator.Mango;
 import org.reflections.Reflections;
@@ -35,14 +36,14 @@ final public class MangoConfiguration {
 
 	private static Mango mango;
 
-	private static void init() {
+	static void init() {
 		if (VertxEmptyUtils.isNotEmpty(mango)) {
 			return;
 		}
 		JsonObject json = VertxConfiguration.jdbcJsonObject();
 		DataSource ds = new DriverManagerDataSource(json.getString("driver_class"), json.getString("url"), json.getString("user"), json.getString("password"));
+		DataSourceUtils.releaseConnection(DataSourceUtils.getConnection(ds), ds);
 		mango = Mango.newInstance(ds);
-
 		Set<Class<?>> daos = reflections.getTypesAnnotatedWith(DB.class);
 		for (Class<?> dao : daos) {
 			try {
@@ -53,6 +54,7 @@ final public class MangoConfiguration {
 				log.error("Error scanner dao " + dao, e);
 			}
 		}
+		
 	}
 
 	@SuppressWarnings("unchecked")
