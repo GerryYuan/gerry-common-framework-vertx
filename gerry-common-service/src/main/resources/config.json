@@ -1,4 +1,0 @@
-{
-  "scan.service.url":"com.gerry.service.impl",
-  "scan.dao.url":"com.gerry.dao.*"
-}
