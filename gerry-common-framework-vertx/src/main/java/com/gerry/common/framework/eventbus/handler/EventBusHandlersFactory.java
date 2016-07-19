@@ -32,7 +32,7 @@ public class EventBusHandlersFactory {
 	private static final Reflections reflections = new Reflections(VertxConfiguration.configStr("scan.service.url"));
 
 	public static void registerHandlers(EventBus eventbus) {
-		log.info("Register available eventbus default codec " + FastJsonMessageCodec.class.getName());
+		log.info("Register eventbus default codec " + FastJsonMessageCodec.class.getName());
 		eventbus.registerDefaultCodec(FastJsonMessage.class, new FastJsonMessageCodec());
 		Set<Class<?>> handlers = reflections.getTypesAnnotatedWith(EventBusServiceProvider.class);
 		for (Class<?> handlerClass : handlers) {
@@ -54,7 +54,7 @@ public class EventBusHandlersFactory {
 			EventBusHeaderFactory.storage(address).put(method.getName(), method);
 		}
 
-		log.info("Register available eventbus consumer address -> " + address);
+		log.info("Register eventbus consumer address -> " + address);
 		eventbus.<FastJsonMessage> consumer(address, res -> {
 			String method = EventBusHeaderFactory.defaultHeader(res);
 			if (!EventBusHeaderFactory.storage(address).containsKey(method)) {
