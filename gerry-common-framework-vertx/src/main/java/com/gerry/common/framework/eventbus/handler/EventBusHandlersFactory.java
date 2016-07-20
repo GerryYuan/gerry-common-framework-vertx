@@ -1,10 +1,9 @@
 package com.gerry.common.framework.eventbus.handler;
 
-import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.Vertx;
 
 import java.lang.reflect.Method;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 import lombok.extern.log4j.Log4j;
 
@@ -32,14 +31,14 @@ public class EventBusHandlersFactory {
 
 	private static final Reflections reflections = new Reflections(VertxConfiguration.configStr("scan.service.url"));
 
-	public static void registerHandlers(EventBus eventbus) {
+	public static void registerHandlers(Vertx vertx) {
 		log.info("Register eventbus default codec " + FastJsonMessageCodec.class.getName());
-		eventbus.registerDefaultCodec(FastJsonMessage.class, new FastJsonMessageCodec());
+		vertx.eventBus().registerDefaultCodec(FastJsonMessage.class, new FastJsonMessageCodec());
 		Set<Class<?>> handlers = reflections.getTypesAnnotatedWith(EventBusServiceProvider.class);
 		for (Class<?> handlerClass : handlers) {
 			try {
 				if (handlerClass.isAnnotationPresent(EventBusServiceProvider.class)) {
-					invokeHandlers(eventbus, handlerClass);
+					invokeHandlers(vertx, handlerClass);
 				}
 			} catch (Exception e) {
 				log.error("Error register consumer " + handlerClass, e);
@@ -47,7 +46,7 @@ public class EventBusHandlersFactory {
 		}
 	}
 
-	private static void invokeHandlers(EventBus eventbus, Class<?> handlerClass) throws Exception {
+	private static void invokeHandlers(Vertx vertx, Class<?> handlerClass) throws Exception {
 		Object serviceHandler = handlerClass.newInstance();
 		Class<?> clazz = ReflectionUtils.getAnnotationInterface(handlerClass, EventBusServiceClient.class);
 		String address = clazz.getName();// 注解接口的类的名称
@@ -56,7 +55,7 @@ public class EventBusHandlersFactory {
 		}
 
 		log.info("Register eventbus consumer address -> " + address);
-		eventbus.<FastJsonMessage> consumer(address, res -> {
+		vertx.eventBus().<FastJsonMessage> consumer(address, res -> {
 			String method = EventBusHeaderFactory.defaultHeader(res);
 			if (!EventBusHeaderFactory.storage(address).containsKey(method)) {
 				String error = String.format("Method %s not found", method);
@@ -68,17 +67,21 @@ public class EventBusHandlersFactory {
 			Method md = EventBusHeaderFactory.storage(address).get(method);
 			Object[] params = res.body().getArgs();
 			try {
-				Object result = md.invoke(serviceHandler, params);
-				if (md.getReturnType().isAssignableFrom(CompletableFuture.class)) {
-					((CompletableFuture<?>) result).whenComplete((msg, e) -> {
-						if (e != null) {
-							res.reply(MessageConverterHelper.converter(new Object[] { e }));
-						} else {
-							res.reply(MessageConverterHelper.converter(new Object[] { msg }));
-						}
-					});
-				}
-				// 如果没有返回值则不返回
+				vertx.executeBlocking(future -> {
+					try {
+						Object result = md.invoke(serviceHandler, params);
+						future.complete(result);
+					} catch (Exception e) {
+						log.error("", e);
+					}
+				}, result -> {
+					if (result.succeeded()) {
+						res.reply(MessageConverterHelper.converter(new Object[] { result.result() }));
+					} else {
+						log.error("", result.cause());
+						res.reply(MessageConverterHelper.converter(new Object[] { result.cause() }));
+					}
+				});
 			} catch (Exception e) {
 				log.error("", e);
 				res.fail(1, e.getMessage());

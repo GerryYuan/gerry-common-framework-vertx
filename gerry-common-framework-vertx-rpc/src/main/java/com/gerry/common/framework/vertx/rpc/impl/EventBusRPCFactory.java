@@ -1,11 +1,13 @@
 package com.gerry.common.framework.vertx.rpc.impl;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 
 import java.lang.reflect.Method;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import lombok.extern.log4j.Log4j;
 
@@ -49,11 +51,11 @@ public class EventBusRPCFactory implements RPCFactory {
 	}
 
 	@Override
-	public void registerServer(EventBus eventBus) throws VertxRPCException {
-		EventBusHandlersFactory.registerHandlers(eventBus);
+	public void registerServer(Vertx vertx) throws VertxRPCException {
+		EventBusHandlersFactory.registerHandlers(vertx);
 	}
 
-	private static CompletableFuture<?> invokeSend(Method method, EventBus eventBus, String address, FastJsonMessage msg, DeliveryOptions options) {
+	private static Object invokeSend(Method method, EventBus eventBus, String address, FastJsonMessage msg, DeliveryOptions options) throws InterruptedException, ExecutionException {
 		if (method.getReturnType() == void.class) {
 			sendVoid(method, eventBus, address, msg, options);
 			return null;
@@ -71,20 +73,27 @@ public class EventBusRPCFactory implements RPCFactory {
 		}
 	}
 
-	private static CompletableFuture<?> sendReturn(Method method, EventBus eventBus, String address, FastJsonMessage msg, DeliveryOptions options) {
-		if (!method.getReturnType().isAssignableFrom(CompletableFuture.class)) {
-			throw new VertxRPCException("EventBusService support only CompletableFuture returns");
-		}
+	private static Object sendReturn(Method method, EventBus eventBus, String address, FastJsonMessage msg, DeliveryOptions options) throws InterruptedException, ExecutionException {
+		/*
+		 * if
+		 * (!method.getReturnType().isAssignableFrom(CompletableFuture.class)) {
+		 * throw new VertxRPCException(
+		 * "EventBusService support only CompletableFuture returns"); }
+		 */
 		CompletableFuture<Object> result = new CompletableFuture<>();
 		log.info(String.format("eventbus client send or publish address -> %s ", address));
 		eventBus.<FastJsonMessage> send(address, msg, options, res -> {
 			if (res.failed()) {
-				result.completeExceptionally(res.cause());
+				// result.completeExceptionally(res.cause());
 				log.error("", res.cause());
 				return;
 			}
 			result.complete(res.result().body().getArgs()[0]);
-			log.info(" accept eventbus server ack ");
+			try {
+				log.info(" accept eventbus server ack " + result.get());
+			} catch (Exception e) {
+				log.error("", e);
+			}
 		});
 		return result;
 	}

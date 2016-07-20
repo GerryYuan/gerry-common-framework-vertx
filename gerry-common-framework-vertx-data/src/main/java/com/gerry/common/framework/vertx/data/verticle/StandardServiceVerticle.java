@@ -20,7 +20,7 @@ public class StandardServiceVerticle extends AbstractVerticle {
 	@Override
 	public void start() throws Exception {
 		// 接受，启动时需要注册
-		EventBusHandlersFactory.registerHandlers(vertx.eventBus());
+		EventBusHandlersFactory.registerHandlers(vertx);
 		log.info("eventbus register successed...");
 		MangoManager.init();
 		log.info("mango jdbc connected...");
