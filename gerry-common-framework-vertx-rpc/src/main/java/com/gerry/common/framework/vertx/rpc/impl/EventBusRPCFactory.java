@@ -5,6 +5,7 @@ import io.vertx.core.eventbus.EventBus;
 
 import java.lang.reflect.Method;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 import lombok.extern.log4j.Log4j;
 
@@ -43,8 +44,7 @@ public class EventBusRPCFactory implements RPCFactory {
 		String address = VertxEmptyUtils.isEmpty(service.value()) ? iface.getName() : service.value();
 		return Reflection.newProxy(iface, (proxy, method, args) -> {
 			FastJsonMessage msg = MessageConverterHelper.converter(args);
-			returnVoid(method, eventBus, address, msg, EventBusHeaderFactory.defaultHeader(new DeliveryOptions(), method.getName()));
-			return null;
+			return invokeSend(method, eventBus, address, msg, EventBusHeaderFactory.defaultHeader(new DeliveryOptions(), method.getName()));
 		});
 	}
 
@@ -53,19 +53,40 @@ public class EventBusRPCFactory implements RPCFactory {
 		EventBusHandlersFactory.registerHandlers(eventBus);
 	}
 
-	private static void returnVoid(Method method, EventBus eventBus, String address, FastJsonMessage msg, DeliveryOptions options) {
+	private static CompletableFuture<?> invokeSend(Method method, EventBus eventBus, String address, FastJsonMessage msg, DeliveryOptions options) {
+		if (method.getReturnType() == void.class) {
+			sendVoid(method, eventBus, address, msg, options);
+			return null;
+		} else {
+			return sendReturn(method, eventBus, address, msg, options);
+		}
+	}
+
+	private static void sendVoid(Method method, EventBus eventBus, String address, FastJsonMessage msg, DeliveryOptions options) {
+		log.info(String.format("eventbus client send or publish address -> %s，no return ", address));
 		if (getAnnotationValue(method) == ConsumerEnums.PUBLISH) {
 			eventBus.publish(address, msg, options);
 		} else if (getAnnotationValue(method) == ConsumerEnums.SEND) {
-			log.info(String.format("eventbus client send address -> %s", address));
-			eventBus.<FastJsonMessage> send(address, msg, options, res -> {
-				if (res.failed()) {
-					log.error("", res.cause());
-					return;
-				}
-				log.info(res.result().body().getArgs()[0]);
-			});
+			eventBus.send(address, msg, options);
 		}
+	}
+
+	private static CompletableFuture<?> sendReturn(Method method, EventBus eventBus, String address, FastJsonMessage msg, DeliveryOptions options) {
+		if (!method.getReturnType().isAssignableFrom(CompletableFuture.class)) {
+			throw new VertxRPCException("EventBusService support only CompletableFuture returns");
+		}
+		CompletableFuture<Object> result = new CompletableFuture<>();
+		log.info(String.format("eventbus client send or publish address -> %s ", address));
+		eventBus.<FastJsonMessage> send(address, msg, options, res -> {
+			if (res.failed()) {
+				result.completeExceptionally(res.cause());
+				log.error("", res.cause());
+				return;
+			}
+			result.complete(res.result().body().getArgs()[0]);
+			log.info(" accept eventbus server ack ");
+		});
+		return result;
 	}
 
 	private static ConsumerEnums getAnnotationValue(Method method) {

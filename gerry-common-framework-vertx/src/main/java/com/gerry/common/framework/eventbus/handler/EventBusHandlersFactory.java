@@ -4,6 +4,7 @@ import io.vertx.core.eventbus.EventBus;
 
 import java.lang.reflect.Method;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import lombok.extern.log4j.Log4j;
 
@@ -68,17 +69,16 @@ public class EventBusHandlersFactory {
 			Object[] params = res.body().getArgs();
 			try {
 				Object result = md.invoke(serviceHandler, params);
-				// 不管成功失败，都返回给eventbus client
-				/*if (md.getReturnType().isAssignableFrom(CompletableFuture.class)) {
+				if (md.getReturnType().isAssignableFrom(CompletableFuture.class)) {
 					((CompletableFuture<?>) result).whenComplete((msg, e) -> {
 						if (e != null) {
-							res.fail(1, e.getMessage());
+							res.reply(MessageConverterHelper.converter(new Object[] { e }));
 						} else {
 							res.reply(MessageConverterHelper.converter(new Object[] { msg }));
 						}
 					});
-				}*/
-				res.reply(MessageConverterHelper.converter(new Object[] { result }));
+				}
+				// 如果没有返回值则不返回
 			} catch (Exception e) {
 				log.error("", e);
 				res.fail(1, e.getMessage());
