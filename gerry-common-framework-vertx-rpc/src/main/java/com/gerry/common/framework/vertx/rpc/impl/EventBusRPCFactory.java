@@ -2,7 +2,6 @@ package com.gerry.common.framework.vertx.rpc.impl;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.eventbus.EventBus;
 
 import java.lang.reflect.Method;
 import java.util.Objects;
@@ -38,7 +37,7 @@ public class EventBusRPCFactory implements RPCFactory {
 	}
 
 	@Override
-	public <T> T createClient(EventBus eventBus, Class<T> iface) {
+	public <T> T createClient(Vertx vertx, Class<T> iface) {
 		EventBusServiceClient service = ReflectionUtils.getAnnotationInterface(iface, EventBusServiceClient.class).getAnnotation(EventBusServiceClient.class);
 		if (service == null) {
 			throw new VertxRPCException("Interface should has EventBusService annotiation.");
@@ -46,7 +45,7 @@ public class EventBusRPCFactory implements RPCFactory {
 		String address = VertxEmptyUtils.isEmpty(service.value()) ? iface.getName() : service.value();
 		return Reflection.newProxy(iface, (proxy, method, args) -> {
 			FastJsonMessage msg = MessageConverterHelper.converter(args);
-			return invokeSend(method, eventBus, address, msg, EventBusHeaderFactory.defaultHeader(new DeliveryOptions(), method.getName()));
+			return invokeSend(method, vertx, address, msg, EventBusHeaderFactory.defaultHeader(new DeliveryOptions(), method.getName()));
 		});
 	}
 
@@ -55,25 +54,25 @@ public class EventBusRPCFactory implements RPCFactory {
 		EventBusHandlersFactory.registerHandlers(vertx);
 	}
 
-	private static Object invokeSend(Method method, EventBus eventBus, String address, FastJsonMessage msg, DeliveryOptions options) throws InterruptedException, ExecutionException {
+	private static Object invokeSend(Method method, Vertx vertx, String address, FastJsonMessage msg, DeliveryOptions options) throws InterruptedException, ExecutionException {
 		if (method.getReturnType() == void.class) {
-			sendVoid(method, eventBus, address, msg, options);
+			sendVoid(method, vertx, address, msg, options);
 			return null;
 		} else {
-			return sendReturn(method, eventBus, address, msg, options);
+			return sendReturn(method, vertx, address, msg, options);
 		}
 	}
 
-	private static void sendVoid(Method method, EventBus eventBus, String address, FastJsonMessage msg, DeliveryOptions options) {
+	private static void sendVoid(Method method, Vertx vertx, String address, FastJsonMessage msg, DeliveryOptions options) {
 		log.info(String.format("eventbus client send or publish address -> %s，no return ", address));
 		if (getAnnotationValue(method) == ConsumerEnums.PUBLISH) {
-			eventBus.publish(address, msg, options);
+			vertx.eventBus().publish(address, msg, options);
 		} else if (getAnnotationValue(method) == ConsumerEnums.SEND) {
-			eventBus.send(address, msg, options);
+			vertx.eventBus().send(address, msg, options);
 		}
 	}
 
-	private static Object sendReturn(Method method, EventBus eventBus, String address, FastJsonMessage msg, DeliveryOptions options) throws InterruptedException, ExecutionException {
+	private static Object sendReturn(Method method, Vertx vertx, String address, FastJsonMessage msg, DeliveryOptions options) throws InterruptedException, ExecutionException {
 		/*
 		 * if
 		 * (!method.getReturnType().isAssignableFrom(CompletableFuture.class)) {
@@ -82,13 +81,18 @@ public class EventBusRPCFactory implements RPCFactory {
 		 */
 		CompletableFuture<Object> result = new CompletableFuture<>();
 		log.info(String.format("eventbus client send or publish address -> %s ", address));
-		eventBus.<FastJsonMessage> send(address, msg, options, res -> {
+		vertx.eventBus().<FastJsonMessage> send(address, msg, options, res -> {
 			if (res.failed()) {
-				// result.completeExceptionally(res.cause());
+				result.completeExceptionally(res.cause());
 				log.error("", res.cause());
 				return;
 			}
 			result.complete(res.result().body().getArgs()[0]);
+			/*
+			 * vertx.executeBlocking(future -> {
+			 * future.complete(res.result().body().getArgs()[0]); }, blockResult
+			 * -> { result.complete(blockResult); });
+			 */
 			try {
 				log.info(" accept eventbus server ack " + result.get());
 			} catch (Exception e) {

@@ -1,7 +1,6 @@
 package com.gerry.common.framework.vertx.rpc;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.EventBus;
 
 import com.gerry.common.framework.vertx.core.Factory;
 import com.gerry.common.framework.vertx.rpc.exception.VertxRPCException;
@@ -19,12 +18,12 @@ public interface RPCFactory extends Factory {
 	/**
 	 * 创建客户端
 	 * 
-	 * @param eventBus
+	 * @param vertx
 	 * @param iface
 	 * @return
 	 * @see
 	 */
-	<T> T createClient(EventBus eventBus, Class<T> iface);
+	<T> T createClient(Vertx vertx, Class<T> iface);
 
 	/**
 	 * 注册服务端
