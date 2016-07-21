@@ -5,7 +5,6 @@ import io.vertx.core.eventbus.DeliveryOptions;
 
 import java.lang.reflect.Method;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import lombok.extern.log4j.Log4j;
@@ -38,6 +37,7 @@ public class EventBusRPCFactory implements RPCFactory {
 
 	@Override
 	public <T> T createClient(Vertx vertx, Class<T> iface) {
+
 		EventBusServiceClient service = ReflectionUtils.getAnnotationInterface(iface, EventBusServiceClient.class).getAnnotation(EventBusServiceClient.class);
 		if (service == null) {
 			throw new VertxRPCException("Interface should has EventBusService annotiation.");
@@ -59,7 +59,7 @@ public class EventBusRPCFactory implements RPCFactory {
 			sendVoid(method, vertx, address, msg, options);
 			return null;
 		} else {
-			return sendReturn(method, vertx, address, msg, options);
+			return sendReturn(vertx, address, msg, options);
 		}
 	}
 
@@ -72,34 +72,18 @@ public class EventBusRPCFactory implements RPCFactory {
 		}
 	}
 
-	private static Object sendReturn(Method method, Vertx vertx, String address, FastJsonMessage msg, DeliveryOptions options) throws InterruptedException, ExecutionException {
-		/*
-		 * if
-		 * (!method.getReturnType().isAssignableFrom(CompletableFuture.class)) {
-		 * throw new VertxRPCException(
-		 * "EventBusService support only CompletableFuture returns"); }
-		 */
-		CompletableFuture<Object> result = new CompletableFuture<>();
+	private static Object sendReturn(Vertx vertx, String address, FastJsonMessage msg, DeliveryOptions options) throws InterruptedException, ExecutionException {
 		log.info(String.format("eventbus client send or publish address -> %s ", address));
 		vertx.eventBus().<FastJsonMessage> send(address, msg, options, res -> {
 			if (res.failed()) {
-				result.completeExceptionally(res.cause());
-				log.error("", res.cause());
+				log.error(res.cause());
 				return;
 			}
-			result.complete(res.result().body().getArgs()[0]);
-			/*
-			 * vertx.executeBlocking(future -> {
-			 * future.complete(res.result().body().getArgs()[0]); }, blockResult
-			 * -> { result.complete(blockResult); });
-			 */
-			try {
-				log.info(" accept eventbus server ack " + result.get());
-			} catch (Exception e) {
-				log.error("", e);
-			}
+			Object result = res.result().body().getArgs()[0];
+			log.info("eventbus client accept consumer replay message -> " + result);
+			
 		});
-		return result;
+		return null;
 	}
 
 	private static ConsumerEnums getAnnotationValue(Method method) {

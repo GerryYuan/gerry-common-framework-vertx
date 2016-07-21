@@ -69,17 +69,18 @@ public class EventBusHandlersFactory {
 			try {
 				vertx.executeBlocking(future -> {
 					try {
-						Object result = md.invoke(serviceHandler, params);
-						future.complete(result);
+						future.complete(md.invoke(serviceHandler, params));
 					} catch (Exception e) {
 						log.error("", e);
+						res.fail(1, e.getMessage());
 					}
 				}, result -> {
 					if (result.succeeded()) {
+						log.info("eventbus reply to client message -> " + result.result());
 						res.reply(MessageConverterHelper.converter(new Object[] { result.result() }));
 					} else {
 						log.error("", result.cause());
-						res.reply(MessageConverterHelper.converter(new Object[] { result.cause() }));
+						res.fail(1, result.cause().getMessage());
 					}
 				});
 			} catch (Exception e) {
