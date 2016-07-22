@@ -74,15 +74,23 @@ public class EventBusRPCFactory implements RPCFactory {
 
 	private static Object sendReturn(Vertx vertx, String address, FastJsonMessage msg, DeliveryOptions options) throws InterruptedException, ExecutionException {
 		log.info(String.format("eventbus client send or publish address -> %s ", address));
-		vertx.eventBus().<FastJsonMessage> send(address, msg, options, res -> {
-			if (res.failed()) {
-				log.error(res.cause());
+		vertx.executeBlocking(future -> {
+			vertx.eventBus().<FastJsonMessage> send(address, msg, options, res -> {
+				if (res.failed()) {
+					log.error(res.cause());
+					return;
+				}
+				Object result = res.result().body().getArgs()[0];
+				future.complete(result);
+			});
+		}, result -> {
+			if (result.failed()) {
+				log.error("", result.cause());
 				return;
 			}
-			Object result = res.result().body().getArgs()[0];
-			log.info("eventbus client accept consumer replay message -> " + result);
-			
+			log.info("eventbus client accept consumer replay message -> " + result.result());
 		});
+
 		return null;
 	}
 
