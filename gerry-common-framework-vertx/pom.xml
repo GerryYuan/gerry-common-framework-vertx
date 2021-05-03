@@ -23,7 +23,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<vertx.version>3.2.1</vertx.version>
 		<slf4j.version>1.7.21</slf4j.version>
-		<alibaba.version>1.2.7</alibaba.version>
+		<alibaba.version>[1.2.31,)</alibaba.version>
 		<lombok.version>1.16.4</lombok.version>
 	</properties>
 
